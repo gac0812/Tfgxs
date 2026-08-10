@@ -1,0 +1,41 @@
+---
+description: 处理 PR 审阅评论的标准流程：看评论、commit 修复、推送、回复机器人
+alwaysApply: true
+---
+
+# PR 审阅评论处理流程
+
+当源头仓库 PR 出现机器人/审阅者评论（如 fennoai）需要修复时，按以下顺序执行，不要只改本地或只口头说明。
+
+## 流程（必须按序）
+
+1. **看评论**
+   - 用 `gh api` / `gh pr view` / `gh pr checks` 拉取该 PR 的 review comments
+   - 定位文件、行号、要求（类型不匹配、契约、测试等）
+
+2. **切到对应 PR 分支并修复**
+   - 检出 fork 上该 PR 的 head 分支（例如 `feat/...`）
+   - 按评论要求改代码；改动范围只覆盖评论指出的问题
+
+3. **Commit 并推送到自己的仓库（从而更新 PR）**
+   - 提交信息遵循 Conventional Commits
+   - `git push` 到 `origin` 的同一 head 分支（PR 自动更新）
+   - **永远**从自己的 fork 更新 PR，不要推到源头仓库
+
+4. **回复机器人/评论线程**
+   - 在同一条 review comment 下回复（`in_reply_to` / replies API）
+   - 说明：已如何修复、对应 commit SHA、必要时补充后续约定（如 mapper）
+   - 不要只留一个与线程无关的 PR 总评
+
+## 回复示例要点
+
+- 写明 commit：`Fixed in <sha>: ...`
+- 简要对应审阅要求（例如 wire 类型已改为 `0 | 1`）
+- 若修复依赖后续工作，一句话标明
+
+## 禁止
+
+- ❌ 只本地改完不 commit / 不 push
+- ❌ 修了代码但不回复评论线程
+- ❌ 另开无关分支或把修复推错到非 PR head 分支
+- ❌ 忽略机器人评论、等用户再次催促才处理

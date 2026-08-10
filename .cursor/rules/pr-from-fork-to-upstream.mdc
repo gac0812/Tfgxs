@@ -1,0 +1,41 @@
+---
+description: 开 PR 时永远从自己的 fork 指向源头仓库，不要反向或直接在源头建分支开 PR
+alwaysApply: true
+---
+
+# PR 方向：Fork → Upstream
+
+创建或协助创建 Pull Request 时，**永远**从自己的仓库开到源头仓库，方向不可颠倒。
+
+## 仓库约定
+
+| 角色 | remote | 仓库 |
+|------|--------|------|
+| 自己的 fork（head） | `origin` | `gac0812/Tfgxs` |
+| 源头仓库（base） | `upstream` | `1024XEngineer/timeflow` |
+
+## 必须遵守
+
+- PR **head** = `origin` 上的功能分支（先 push 到自己的 fork）
+- PR **base** = `upstream` 的目标分支（通常是 `main`）
+- 使用：`gh pr create --repo 1024XEngineer/timeflow --head gac0812:<branch> --base main ...`
+- 若本地还没有 `upstream` remote，先添加：`git remote add upstream https://github.com/1024XEngineer/timeflow.git`
+
+## 禁止
+
+- ❌ 从源头仓库开 PR 到自己的 fork
+- ❌ 在源头仓库直接建分支并开 PR（除非用户明确要求）
+- ❌ 把 `origin` 当成源头，或把 `upstream` 当成自己的推送目标来开 PR
+
+## 正确流程示例
+
+```bash
+# 1. 推送到自己的 fork
+git push -u origin HEAD
+
+# 2. 向源头开 PR
+gh pr create --repo 1024XEngineer/timeflow \
+  --head gac0812:$(git branch --show-current) \
+  --base main \
+  --title "..." --body "..."
+```

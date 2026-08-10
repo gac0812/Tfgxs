@@ -1,0 +1,24 @@
+---
+description: 禁止修改已向源头开出的 PR 对应分支；新工作必须开新分支
+alwaysApply: true
+---
+
+# 禁止改动已开源头 PR 的分支
+
+已通过 fork 向源头仓库（`1024XEngineer/timeflow`）开出的 Pull Request，其 **head 分支不可再被改写**（包括 commit、push、rebase、merge 进该分支、force-push）。
+
+## 必须遵守
+
+- 动手前用 `gh pr list --repo 1024XEngineer/timeflow --author gac0812 --state open` 确认 open PR 的 `headRefName`
+- 新功能 / 迁移 / 修复：从合适基线 **新建分支** 开展，推送到自己的 fork，需要时再 **另开新 PR**
+- 若审阅评论要求修某个 **仍 open** 的 PR：仅当用户 **明确点名该 PR 号并要求修复** 时，才可向该 head 提交；否则默认开新分支
+
+## 禁止
+
+- ❌ 为继续开发而 `merge` / `rebase` 其它工作进已 open 的 PR 分支
+- ❌ 在已 open 的 PR 分支上做 A→B→C 等新迁移提交
+- ❌ 未经用户明确要求就 `git push` 更新已关联源头 PR 的分支
+
+## 例外
+
+- 用户明确说「修 PR #N 的评论 / 把修复推到该 PR」时，才更新对应 head

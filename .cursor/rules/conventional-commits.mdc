@@ -1,0 +1,60 @@
+---
+description: Commit 与 PR 标题必须遵循 Conventional Commits 规范
+alwaysApply: true
+---
+
+# Conventional Commits 规范
+
+提交信息与 PR 标题都必须遵循 [Conventional Commits 1.0.0](https://www.conventionalcommits.org/zh-hans/v1.0.0/)。
+
+## 格式
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+## 常用 type
+
+| type | 用途 |
+|------|------|
+| `feat` | 新功能 |
+| `fix` | 修复 bug |
+| `docs` | 仅文档变更 |
+| `style` | 不影响代码含义的格式调整 |
+| `refactor` | 既非 feat 也非 fix 的代码重构 |
+| `perf` | 性能优化 |
+| `test` | 增补或修正测试 |
+| `build` | 构建系统或外部依赖 |
+| `ci` | CI 配置与脚本 |
+| `chore` | 其他杂项（不修改 src/test） |
+| `revert` | 回滚某次提交 |
+
+## 规则
+
+- 描述用英文或中文均可，但同一仓库内保持与现有提交风格一致（本仓库现有多为英文）
+- `description` 简明说明「为什么/做什么」，句末不加句号
+- 破坏性变更：在 type/scope 后加 `!`，或在 footer 写 `BREAKING CHANGE: ...`
+- **PR 标题**必须同样符合上述格式（例如 `feat(reminder): add local reminder ports`）
+- 写 commit message 或 `gh pr create --title` 时主动按此规范起草，不要写成随意句子
+
+## 示例
+
+```
+feat(reminder): add local reminder ports and mock adapters
+
+fix(frontend): restore Node 20 toolchain
+
+ci: align pipeline with local quality gate
+
+feat(backend)!: establish initial layered development framework
+```
+
+## 禁止
+
+- ❌ `Update stuff` / `修复一些问题` / `WIP` 等非规范标题
+- ❌ PR 标题写成段落或不含 type 前缀
+- ❌ 用 `update` / `add` 单独作为 type（应使用 `feat` / `fix` / `chore` 等）
