@@ -12,13 +12,13 @@ import {
 import { MockAudioPlayback } from '../../infrastructure/audio';
 import { MockLocationMonitor } from '../../infrastructure/location';
 import {
-  MockAlarmScheduler,
-  MockDeviceCapability,
   MockPopup,
   MockReminderDelivery,
   MockReminderRecovery,
   MockSystemNotification,
   MockVibration,
+  NativeAlarmScheduler,
+  NativeDeviceCapability,
 } from '../../infrastructure/notifications';
 import { MockTimeListener } from '../../shared/time';
 import { MockReminderPresenter } from '../../features/reminder/presentation';
@@ -35,10 +35,10 @@ export function createAppServices(): AppServices {
     schedules: new MockLocalScheduleReader(),
     time: new MockTimeListener(),
     location: new MockLocationMonitor(),
-    alarms: new MockAlarmScheduler(),
+    alarms: new NativeAlarmScheduler(),
     delivery: new MockReminderDelivery(),
     audio: new MockAudioPlayback(),
-    device: new MockDeviceCapability(),
+    device: new NativeDeviceCapability(),
     presenter: new MockReminderPresenter(),
     systemNotification: new MockSystemNotification(),
     popup: new MockPopup(),
