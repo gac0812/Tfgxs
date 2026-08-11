@@ -18,19 +18,22 @@ import {
   MockSystemNotification,
   NativeAlarmScheduler,
   NativeDeviceCapability,
+  ReactNativeAlertDialog,
   ReactNativeVibration,
 } from '../../infrastructure/notifications';
-import { IntervalTimeListener } from '../../shared/time';
+import { IntervalTimeListener } from '../../infrastructure/time';
 import { AlertReminderPresenter } from '../../features/reminder/presentation';
 
 export type AppServices = {
   runtime: AppRuntime;
   reminder: ReminderApplicationPort;
   reminderPorts: ReminderApplicationDependencies;
+  alertDialog: import('../../features/reminder/application/interfaces').AlertDialogPort;
 };
 
 /** 提醒组合根：LocalReminderApplication + 可替换适配器。 */
 export function createAppServices(): AppServices {
+  const alertDialog = new ReactNativeAlertDialog();
   const reminderPorts: ReminderApplicationDependencies = {
     schedules: new MockLocalScheduleReader(),
     time: new IntervalTimeListener(),
@@ -39,7 +42,7 @@ export function createAppServices(): AppServices {
     delivery: new MockReminderDelivery(),
     audio: new ExpoAudioPlayback(),
     device: new NativeDeviceCapability(),
-    presenter: new AlertReminderPresenter(),
+    presenter: new AlertReminderPresenter(alertDialog),
     systemNotification: new MockSystemNotification(),
     popup: new MockPopup(),
     vibration: new ReactNativeVibration(),
@@ -58,5 +61,6 @@ export function createAppServices(): AppServices {
     ]),
     reminder,
     reminderPorts,
+    alertDialog,
   };
 }

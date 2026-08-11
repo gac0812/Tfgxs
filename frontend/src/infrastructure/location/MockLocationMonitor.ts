@@ -1,14 +1,15 @@
 import type {
   LocationMonitorEvent,
   LocationMonitorPort,
+  LocationRebuildTarget,
   LocationWatchHandle,
   LocationWatchRequest,
 } from '../../features/reminder/application/interfaces';
-import type { LocalReminderSchedule, LocationSample } from '../../features/reminder/domain';
+import type { LocationObservation } from '../../contracts/reminder';
 
 import type { LocationProvider } from './LocationProvider';
 
-const MOCK_SAMPLE: LocationSample = {
+const MOCK_SAMPLE: LocationObservation = {
   latitude: 31.2304,
   longitude: 121.4737,
   accuracy_meters: 12,
@@ -32,20 +33,20 @@ export class MockLocationMonitor implements LocationMonitorPort, LocationProvide
   }
 
   async rebuild(
-    schedules: readonly LocalReminderSchedule[],
+    targets: readonly LocationRebuildTarget[],
     _listener: (event: LocationMonitorEvent) => void,
   ): Promise<readonly LocationWatchHandle[]> {
-    const schedule = schedules[0];
-    return schedule
-      ? [{ listener_id: 'mock-location-listener-001', schedule_id: schedule.id }]
+    const target = targets[0];
+    return target
+      ? [{ listener_id: 'mock-location-listener-001', schedule_id: target.schedule_id }]
       : [];
   }
 
-  async getLastSample(): Promise<LocationSample | null> {
+  async getLastSample(): Promise<LocationObservation | null> {
     return { ...MOCK_SAMPLE };
   }
 
-  async getCurrentSample(): Promise<LocationSample | null> {
+  async getCurrentSample(): Promise<LocationObservation | null> {
     return { ...MOCK_SAMPLE };
   }
 }

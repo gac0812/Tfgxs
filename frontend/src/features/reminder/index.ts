@@ -20,6 +20,7 @@ export type {
   ReminderType,
   GeofenceTransition,
   GeofenceWatchMode,
+  StrengthDeliveryPlan,
 } from './domain';
 export {
   DEFAULT_SNOOZE_MINUTES,
@@ -31,6 +32,7 @@ export {
   resolveEffectiveTriggerAt,
   resolveGeofenceCenter,
   resolveSnoozeUntil,
+  resolveStrengthDeliveryPlan,
   resolveTimeTriggerAt,
   resolveWatchMode,
 } from './domain';
@@ -48,9 +50,13 @@ export type {
   LocalTimeTick,
   LocationMonitorEvent,
   LocationMonitorPort,
+  LocationRebuildTarget,
   LocationWatchHandle,
   LocationWatchMode,
   LocationWatchRequest,
+  AlertDialogButton,
+  AlertDialogPort,
+  AlertDialogRequest,
   PopupPort,
   PopupReceipt,
   PopupRequest,
