@@ -1,9 +1,7 @@
 import { DEFAULT_SNOOZE_MINUTES, type LocalReminderSchedule } from './reminder';
 
 /** 计算时间型提醒的应触发时刻（ISO）。无有效时间则返回 null。 */
-export function resolveTimeTriggerAt(
-  schedule: LocalReminderSchedule,
-): string | null {
+export function resolveTimeTriggerAt(schedule: LocalReminderSchedule): string | null {
   const reminder = schedule.reminder;
   if (reminder == null) return null;
 
@@ -28,9 +26,7 @@ export function resolveTimeTriggerAt(
 }
 
 /** 当前有效触发时刻：snooze 未结束时以 snoozed_until 为准。 */
-export function resolveEffectiveTriggerAt(
-  schedule: LocalReminderSchedule,
-): string | null {
+export function resolveEffectiveTriggerAt(schedule: LocalReminderSchedule): string | null {
   if (
     schedule.runtime.reminder_disposition_state === 'snoozed' &&
     schedule.runtime.snoozed_until != null
@@ -52,20 +48,14 @@ export function resolveSnoozeUntil(
   return new Date(base + minutes * 60_000).toISOString();
 }
 
-export function isSnoozeActive(
-  schedule: LocalReminderSchedule,
-  nowIso: string,
-): boolean {
+export function isSnoozeActive(schedule: LocalReminderSchedule, nowIso: string): boolean {
   if (schedule.runtime.reminder_disposition_state !== 'snoozed') return false;
   const until = schedule.runtime.snoozed_until;
   if (until == null) return false;
   return Date.parse(nowIso) < Date.parse(until);
 }
 
-export function isTimeWindowReached(
-  schedule: LocalReminderSchedule,
-  nowIso: string,
-): boolean {
+export function isTimeWindowReached(schedule: LocalReminderSchedule, nowIso: string): boolean {
   if (schedule.status !== 'active') return false;
   if (schedule.schedule_type !== 'time') return false;
   if (isSnoozeActive(schedule, nowIso)) return false;
@@ -75,10 +65,7 @@ export function isTimeWindowReached(
   return Date.parse(nowIso) >= Date.parse(triggerAt);
 }
 
-export function isSnoozeExpired(
-  schedule: LocalReminderSchedule,
-  nowIso: string,
-): boolean {
+export function isSnoozeExpired(schedule: LocalReminderSchedule, nowIso: string): boolean {
   const until = schedule.runtime.snoozed_until;
   if (until == null) return false;
   if (schedule.runtime.reminder_disposition_state !== 'snoozed') return false;

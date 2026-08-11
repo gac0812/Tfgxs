@@ -18,11 +18,7 @@ import type {
   ReminderTrigger,
   ReminderTriggerReason,
 } from '../domain';
-import {
-  evaluateGeofence,
-  resolveGeofenceCenter,
-  resolveWatchMode,
-} from '../domain/geofence';
+import { evaluateGeofence, resolveGeofenceCenter, resolveWatchMode } from '../domain/geofence';
 import {
   isSnoozeActive,
   isSnoozeExpired,
@@ -293,10 +289,7 @@ export class LocalReminderApplication implements ReminderApplicationPort {
     }
   }
 
-  async confirm(
-    scheduleId: string,
-    confirmedAt: string,
-  ): Promise<ReminderApplicationResult> {
+  async confirm(scheduleId: string, confirmedAt: string): Promise<ReminderApplicationResult> {
     await this.teardownDelivery(scheduleId);
 
     const disposition: ReminderDisposition = {
@@ -348,11 +341,7 @@ export class LocalReminderApplication implements ReminderApplicationPort {
 
   async snooze(request: ReminderSnoozeRequest): Promise<ReminderApplicationResult> {
     const nowIso = new Date().toISOString();
-    const snoozedUntil = resolveSnoozeUntil(
-      nowIso,
-      request.snooze_until,
-      request.snooze_minutes,
-    );
+    const snoozedUntil = resolveSnoozeUntil(nowIso, request.snooze_until, request.snooze_minutes);
     await this.teardownDelivery(request.schedule_id);
 
     const disposition: ReminderDisposition = {
@@ -433,12 +422,9 @@ export class LocalReminderApplication implements ReminderApplicationPort {
     }
     this.registrations.clear();
 
-    const locationHandles = await this.dependencies.location.rebuild(
-      active,
-      (event) => {
-        void this.handleLocationMonitorEvent(event);
-      },
-    );
+    const locationHandles = await this.dependencies.location.rebuild(active, (event) => {
+      void this.handleLocationMonitorEvent(event);
+    });
     const locationBySchedule = new Map<string, LocationWatchHandle>(
       locationHandles.map((handle) => [handle.schedule_id, handle]),
     );
@@ -504,10 +490,7 @@ export class LocalReminderApplication implements ReminderApplicationPort {
     return true;
   }
 
-  private async canDeliver(
-    schedule: LocalReminderSchedule,
-    nowIso: string,
-  ): Promise<boolean> {
+  private async canDeliver(schedule: LocalReminderSchedule, nowIso: string): Promise<boolean> {
     if (schedule.status !== 'active') return false;
     if (this.activeDeliveries.has(schedule.id)) return false;
     if (this.deliverLocks.has(schedule.id)) return false;
@@ -574,9 +557,7 @@ export class LocalReminderApplication implements ReminderApplicationPort {
     };
   }
 
-  private async withStoredRuntime(
-    schedule: LocalReminderSchedule,
-  ): Promise<LocalReminderSchedule> {
+  private async withStoredRuntime(schedule: LocalReminderSchedule): Promise<LocalReminderSchedule> {
     const stored = await this.readRuntime(schedule.id);
     if (stored == null) return schedule;
     return { ...schedule, runtime: stored };
@@ -586,10 +567,7 @@ export class LocalReminderApplication implements ReminderApplicationPort {
     return this.dependencies.state.read(scheduleId);
   }
 
-  private async patchRuntime(
-    scheduleId: string,
-    state: ReminderRuntimeState,
-  ): Promise<void> {
+  private async patchRuntime(scheduleId: string, state: ReminderRuntimeState): Promise<void> {
     await this.dependencies.state.write(scheduleId, state);
     const registration = this.registrations.get(scheduleId);
     if (registration != null) {

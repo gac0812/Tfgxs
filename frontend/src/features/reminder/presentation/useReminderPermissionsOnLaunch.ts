@@ -1,10 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Alert, AppState, type AppStateStatus, Platform } from 'react-native';
 
-import type {
-  DeviceCapabilityPort,
-  DevicePermission,
-} from '../application/interfaces';
+import type { DeviceCapabilityPort, DevicePermission } from '../application/interfaces';
 
 const PERMISSION_ORDER: DevicePermission[] = [
   'notifications',
@@ -14,9 +11,7 @@ const PERMISSION_ORDER: DevicePermission[] = [
   'battery_optimization',
 ];
 
-const PERMISSION_PROMPTS: Partial<
-  Record<DevicePermission, { title: string; message: string }>
-> = {
+const PERMISSION_PROMPTS: Partial<Record<DevicePermission, { title: string; message: string }>> = {
   notifications: {
     title: '需要通知权限',
     message: '允许通知后，日程闹钟才能弹出提醒并播放语音。',

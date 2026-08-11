@@ -6,10 +6,7 @@ export type GeofenceWatchMode = 'arrive' | 'return';
 export type GeofenceTransition = 'no_change' | 'armed' | 'triggered';
 
 /** Haversine 球面距离（米）。 */
-export function distanceMeters(
-  from: GeoPoint | null | undefined,
-  to: GeoPoint,
-): number {
+export function distanceMeters(from: GeoPoint | null | undefined, to: GeoPoint): number {
   if (from == null || from.latitude == null || from.longitude == null) {
     return Number.POSITIVE_INFINITY;
   }
@@ -18,8 +15,7 @@ export function distanceMeters(
   const deltaPhi = toRadians(to.latitude - from.latitude);
   const deltaLambda = toRadians(to.longitude - from.longitude);
   const a =
-    Math.sin(deltaPhi / 2) ** 2 +
-    Math.cos(phi1) * Math.cos(phi2) * Math.sin(deltaLambda / 2) ** 2;
+    Math.sin(deltaPhi / 2) ** 2 + Math.cos(phi1) * Math.cos(phi2) * Math.sin(deltaLambda / 2) ** 2;
   return 2 * EARTH_RADIUS_METERS * Math.asin(Math.sqrt(a));
 }
 
@@ -37,8 +33,7 @@ export function evaluateGeofence(
   const center = resolveGeofenceCenter(schedule, mode);
   if (center == null) return 'no_change';
 
-  const inside =
-    distanceMeters(center, sample) <= schedule.geofence_radius_meters;
+  const inside = distanceMeters(center, sample) <= schedule.geofence_radius_meters;
   const armed = schedule.runtime.geofence_armed;
 
   if (armed) {
@@ -48,9 +43,7 @@ export function evaluateGeofence(
 }
 
 export function resolveWatchMode(schedule: LocalReminderSchedule): GeofenceWatchMode {
-  return schedule.reminder?.reminder_type === 'return_to_recorded_location'
-    ? 'return'
-    : 'arrive';
+  return schedule.reminder?.reminder_type === 'return_to_recorded_location' ? 'return' : 'arrive';
 }
 
 export function resolveGeofenceCenter(
