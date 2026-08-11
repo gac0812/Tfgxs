@@ -1,6 +1,6 @@
 import type { ReminderStrength } from './reminder';
 
-/** Wiki §3.2：强度决定客户端送达通道组合。 */
+/** 提醒强度对应的客户端送达通道组合。 */
 export type StrengthDeliveryPlan = {
   useSystemNotification: boolean;
   usePopup: boolean;

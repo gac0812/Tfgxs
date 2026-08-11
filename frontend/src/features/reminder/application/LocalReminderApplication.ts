@@ -251,7 +251,7 @@ export class LocalReminderApplication implements ReminderApplicationPort {
         let usedFallbackAudio = false;
         let deliveryId = `delivery-${schedule.id}`;
 
-        // Wiki §3.2：low=系统通知；medium=弹窗+短震动；high=弹窗+短震动+TTS（失败则本地音）。
+        // low=系统通知；medium=弹窗+短震动；high=弹窗+短震动+TTS（失败则本地音）。
         if (plan.useSystemNotification) {
           const receipt = await this.dependencies.delivery.deliver(request);
           deliveryId = receipt.delivery_id;
