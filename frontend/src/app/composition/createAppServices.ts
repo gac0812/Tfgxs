@@ -10,7 +10,7 @@ import {
   MockReminderDispositionSync,
 } from '../../features/reminder/data/local';
 import { ExpoAudioPlayback } from '../../infrastructure/audio';
-import { MockLocationMonitor } from '../../infrastructure/location';
+import { NativeLocationMonitor } from '../../infrastructure/location';
 import {
   MockPopup,
   MockReminderDelivery,
@@ -37,7 +37,7 @@ export function createAppServices(): AppServices {
   const reminderPorts: ReminderApplicationDependencies = {
     schedules: new MockLocalScheduleReader(),
     time: new IntervalTimeListener(),
-    location: new MockLocationMonitor(),
+    location: new NativeLocationMonitor(),
     alarms: new NativeAlarmScheduler(),
     delivery: new MockReminderDelivery(),
     audio: new ExpoAudioPlayback(),
