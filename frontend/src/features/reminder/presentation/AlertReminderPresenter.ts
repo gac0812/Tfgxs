@@ -27,8 +27,7 @@ export class AlertReminderPresenter implements ReminderPresenterPort {
   async show(request: ReminderDeliveryRequest): Promise<ReminderPresentationReceipt> {
     this.suppressed.delete(request.schedule_id);
     this.visibleScheduleId = request.schedule_id;
-    const message =
-      MESSAGE_BY_REASON[request.trigger.reason] ?? '日程提醒已触发，请及时处理。';
+    const message = MESSAGE_BY_REASON[request.trigger.reason] ?? '日程提醒已触发，请及时处理。';
 
     Alert.alert(request.title || '日程提醒', message, [
       {

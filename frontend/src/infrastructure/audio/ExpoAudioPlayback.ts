@@ -73,11 +73,7 @@ export class ExpoAudioPlayback implements AudioPlaybackPort {
     this.activeScheduleId = null;
   }
 
-  private async playBytes(
-    scheduleId: string,
-    data: Uint8Array,
-    format: string,
-  ): Promise<boolean> {
+  private async playBytes(scheduleId: string, data: Uint8Array, format: string): Promise<boolean> {
     const expoAudio = await loadExpoAudio();
     if (expoAudio == null) return false;
 
