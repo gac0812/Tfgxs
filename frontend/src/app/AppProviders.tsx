@@ -1,4 +1,4 @@
-import { useEffect, useMemo, type PropsWithChildren } from 'react';
+import { useCallback, useEffect, useMemo, type PropsWithChildren } from 'react';
 
 import { createAppServices } from './composition/createAppServices';
 import { useReminderPermissionsOnLaunch } from '../features/reminder';
@@ -6,7 +6,14 @@ import { useReminderPermissionsOnLaunch } from '../features/reminder';
 /** 组合应用级提供器，并启动提醒运行时。 */
 export function AppProviders({ children }: PropsWithChildren) {
   const services = useMemo(() => createAppServices(), []);
-  useReminderPermissionsOnLaunch(services.reminderPorts.device, services.alertDialog);
+  const onPermissionsUpdated = useCallback(() => {
+    void services.reminder.rebuild();
+  }, [services]);
+  useReminderPermissionsOnLaunch(
+    services.reminderPorts.device,
+    services.alertDialog,
+    onPermissionsUpdated,
+  );
 
   useEffect(() => {
     void services.runtime.start();
