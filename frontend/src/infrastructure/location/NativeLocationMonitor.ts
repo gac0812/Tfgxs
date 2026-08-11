@@ -176,18 +176,14 @@ export class NativeLocationMonitor implements LocationMonitorPort, LocationProvi
     }));
 
     if (regions.length === 0) {
-      if (await Location.hasStartedGeofencingAsync(GEOFENCE_TASK_NAME)) {
-        await Location.stopGeofencingAsync(GEOFENCE_TASK_NAME);
-      }
+      await stopGeofencingIfStarted(Location);
       await this.stopPositionWatch();
       return;
     }
 
     const foreground = await Location.getForegroundPermissionsAsync();
     if (foreground.status !== 'granted') {
-      if (await Location.hasStartedGeofencingAsync(GEOFENCE_TASK_NAME)) {
-        await Location.stopGeofencingAsync(GEOFENCE_TASK_NAME);
-      }
+      await stopGeofencingIfStarted(Location);
       await this.stopPositionWatch();
       return;
     }
@@ -202,9 +198,7 @@ export class NativeLocationMonitor implements LocationMonitorPort, LocationProvi
       return;
     }
 
-    if (await Location.hasStartedGeofencingAsync(GEOFENCE_TASK_NAME)) {
-      await Location.stopGeofencingAsync(GEOFENCE_TASK_NAME);
-    }
+    await stopGeofencingIfStarted(Location);
     await this.ensurePositionWatch(Location);
   }
 
@@ -288,6 +282,17 @@ function toSample(position: {
     accuracy_meters: position.coords.accuracy ?? 0,
     observed_at: new Date(position.timestamp).toISOString(),
   };
+}
+
+/** hasStartedGeofencingAsync 在无后台定位权限时会抛错，不能直接调用。 */
+async function stopGeofencingIfStarted(Location: LocationModule): Promise<void> {
+  try {
+    if (await Location.hasStartedGeofencingAsync(GEOFENCE_TASK_NAME)) {
+      await Location.stopGeofencingAsync(GEOFENCE_TASK_NAME);
+    }
+  } catch {
+    // 无后台定位权限时视为未启动。
+  }
 }
 
 async function loadExpoLocation(): Promise<LocationModule | null> {
