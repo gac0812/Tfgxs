@@ -3,11 +3,11 @@ import type {
   ReminderApplicationDependencies,
   ReminderApplicationPort,
 } from '../../features/reminder/application/interfaces';
+import { LocalReminderApplication } from '../../features/reminder/application';
 import {
+  MemoryReminderStateStore,
   MockLocalScheduleReader,
-  MockReminderApplication,
   MockReminderDispositionSync,
-  MockReminderStateStore,
 } from '../../features/reminder/data/local';
 import { MockAudioPlayback } from '../../infrastructure/audio';
 import { MockLocationMonitor } from '../../infrastructure/location';
@@ -29,7 +29,7 @@ export type AppServices = {
   reminderPorts: ReminderApplicationDependencies;
 };
 
-/** 提醒端口的组合根；当前所有具体适配器都是确定性的模拟实现。 */
+/** 提醒组合根：LocalReminderApplication + MemoryReminderStateStore，其余仍为 mock。 */
 export function createAppServices(): AppServices {
   const reminderPorts: ReminderApplicationDependencies = {
     schedules: new MockLocalScheduleReader(),
@@ -44,10 +44,10 @@ export function createAppServices(): AppServices {
     popup: new MockPopup(),
     vibration: new MockVibration(),
     recovery: new MockReminderRecovery(),
-    state: new MockReminderStateStore(),
+    state: new MemoryReminderStateStore(),
     dispositionSync: new MockReminderDispositionSync(),
   };
-  const reminder = new MockReminderApplication(reminderPorts);
+  const reminder = new LocalReminderApplication(reminderPorts);
 
   return {
     runtime: new AppRuntime([

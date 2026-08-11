@@ -18,8 +18,22 @@ export type {
   ReminderTrigger,
   ReminderTriggerReason,
   ReminderType,
+  GeofenceTransition,
+  GeofenceWatchMode,
 } from './domain';
-export { DEFAULT_SNOOZE_MINUTES } from './domain';
+export {
+  DEFAULT_SNOOZE_MINUTES,
+  distanceMeters,
+  evaluateGeofence,
+  isSnoozeActive,
+  isSnoozeExpired,
+  isTimeWindowReached,
+  resolveEffectiveTriggerAt,
+  resolveGeofenceCenter,
+  resolveSnoozeUntil,
+  resolveTimeTriggerAt,
+  resolveWatchMode,
+} from './domain';
 export type {
   AlarmScheduleReceipt,
   AlarmScheduleRequest,
@@ -61,7 +75,9 @@ export type {
   TimeListenerPort,
   VibrationPort,
 } from './application';
+export { LocalReminderApplication } from './application';
 export {
+  MemoryReminderStateStore,
   MockLocalScheduleReader,
   MockReminderApplication,
   MockReminderDispositionSync,
@@ -69,3 +85,4 @@ export {
   MOCK_REMINDER_SCHEDULES,
 } from './data/local';
 export { MockReminderPresenter } from './presentation';
+export type { ReminderActionHandler, ReminderViewModel } from './presentation';
