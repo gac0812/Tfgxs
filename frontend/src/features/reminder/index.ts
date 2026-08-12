@@ -37,6 +37,8 @@ export {
   resolveWatchMode,
 } from './domain';
 export type {
+  AlarmNativeDisposition,
+  AlarmNativeEvent,
   AlarmScheduleReceipt,
   AlarmScheduleRequest,
   AlarmSchedulerPort,

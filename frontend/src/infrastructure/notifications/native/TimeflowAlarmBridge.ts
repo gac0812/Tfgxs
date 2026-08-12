@@ -146,11 +146,7 @@ export function subscribeNativeAlarmEvents(
   }
   const emitter = new NativeEventEmitter(native as never);
   const subscription = emitter.addListener(EVENT_NAME, (payload: NativeAlarmEventPayload) => {
-    if (
-      payload?.type !== 'fired' &&
-      payload?.type !== 'dismissed' &&
-      payload?.type !== 'snoozed'
-    ) {
+    if (payload?.type !== 'fired' && payload?.type !== 'dismissed' && payload?.type !== 'snoozed') {
       return;
     }
     listener(payload);
