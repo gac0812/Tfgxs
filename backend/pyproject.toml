@@ -11,9 +11,11 @@ requires-python = ">=3.11,<3.12"
 dependencies = [
     "alembic>=1.16,<2",
     "fastapi>=0.140.7,<1",
+    "openai>=2,<3",
     "psycopg[binary]>=3.2,<4",
     "pydantic>=2.13,<3",
     "python-dotenv>=1.1,<2",
+    "python-dateutil>=2.9,<3",
     "sqlalchemy>=2.0,<3",
     "uvicorn>=0.51,<1",
     "websockets>=15,<16",
@@ -27,6 +29,7 @@ dev = [
     "pytest-asyncio>=1,<2",
     "pytest-cov>=7,<8",
     "ruff>=0.15,<1",
+    "types-python-dateutil>=2.9,<3",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -34,9 +37,16 @@ packages = ["src/timeflow"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = ["-q"]
+addopts = [
+    "-q",
+    "--cov=timeflow",
+    "--cov-branch",
+    "--cov-report=term-missing",
+    "--cov-fail-under=95",
+]
 
 [tool.coverage.run]
+data_file = ".pytest_cache/.coverage"
 source = ["timeflow"]
 branch = true
 

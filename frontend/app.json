@@ -29,6 +29,7 @@
       "predictiveBackGestureEnabled": false
     },
     "plugins": [
+      "expo-sqlite",
       [
         "expo-location",
         {
