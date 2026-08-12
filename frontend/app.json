@@ -13,12 +13,20 @@
       }
     },
     "android": {
+      "package": "com.timeflow",
       "permissions": [
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
         "ACCESS_BACKGROUND_LOCATION",
         "FOREGROUND_SERVICE",
-        "FOREGROUND_SERVICE_LOCATION"
+        "FOREGROUND_SERVICE_LOCATION",
+        "SCHEDULE_EXACT_ALARM",
+        "POST_NOTIFICATIONS",
+        "USE_FULL_SCREEN_INTENT",
+        "SYSTEM_ALERT_WINDOW",
+        "REQUEST_IGNORE_BATTERY_OPTIMIZATIONS",
+        "FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+        "VIBRATE"
       ],
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
@@ -39,7 +47,16 @@
           "isAndroidBackgroundLocationEnabled": true,
           "isAndroidForegroundServiceEnabled": true
         }
-      ]
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#15352B",
+          "defaultChannel": "timeflow-reminders"
+        }
+      ],
+      "./plugins/withTimeflowAlarm"
     ]
   }
 }
