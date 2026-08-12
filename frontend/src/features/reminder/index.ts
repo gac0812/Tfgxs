@@ -86,15 +86,12 @@ export type {
 export { LocalReminderApplication } from './application';
 export {
   MemoryReminderStateStore,
-  MockLocalScheduleReader,
-  MockReminderApplication,
-  MockReminderDispositionSync,
-  MockReminderStateStore,
-  MOCK_REMINDER_SCHEDULES,
+  InMemoryLocalScheduleReader,
+  LocalReminderDelivery,
+  LocalReminderDispositionSync,
+  LocalReminderRecovery,
+  LocalSystemNotification,
+  NoopPopup,
 } from './data/local';
-export {
-  AlertReminderPresenter,
-  MockReminderPresenter,
-  useReminderPermissionsOnLaunch,
-} from './presentation';
+export { AlertReminderPresenter, useReminderPermissionsOnLaunch } from './presentation';
 export type { ReminderActionHandler, ReminderViewModel } from './presentation';
