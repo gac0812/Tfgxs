@@ -16,6 +16,10 @@ export class ReactNativeAlertDialog implements AlertDialogPort {
         style: button.style,
         onPress: button.onPress,
       })),
+      {
+        cancelable: request.cancelable ?? true,
+        onDismiss: request.onDismiss,
+      },
     );
   }
 }

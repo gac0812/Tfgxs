@@ -5,21 +5,26 @@ import type {
 } from '../../features/reminder/application/interfaces';
 import { buildAudioDataUri } from './audioDataUri';
 
+// Metro 资源 id；高强度本地兜底铃声（与原生 AlarmSoundService 同源）。
+const LOCAL_ALARM_SOUND = require('../../../assets/sounds/alarm_prompt.mp3') as number;
+
 type AudioPlayerLike = {
   pause: () => void;
-  replace: (source: string) => void;
+  replace: (source: string | number) => void;
   play: () => void;
   volume: number;
+  loop: boolean;
 };
 
 type ExpoAudioModule = {
-  createAudioPlayer: (source?: string | null) => AudioPlayerLike;
+  createAudioPlayer: (source?: string | number | null) => AudioPlayerLike;
   setAudioModeAsync: (mode: Record<string, unknown>) => Promise<void>;
 };
 
 /**
- * 音频播放适配器：在已安装 expo-audio 时播放 data URI；
- * 否则标记为本地兜底占位（不抛错，便于无原生依赖环境开发）。
+ * 音频播放适配器：
+ * - TTS 有字节时播放并循环，直到 stop
+ * - 否则播放打包的 alarm_prompt.mp3（高强度本地兜底）
  */
 export class ExpoAudioPlayback implements AudioPlaybackPort {
   private player: AudioPlayerLike | null = null;
@@ -60,16 +65,21 @@ export class ExpoAudioPlayback implements AudioPlaybackPort {
         used_local_fallback: true,
       };
     }
+
+    const played = await this.playBundledAlarm(request.schedule_id);
     return {
-      playback_id: `local-placeholder-${request.schedule_id}`,
-      played: false,
+      playback_id: `local-bundled-${request.schedule_id}`,
+      played,
       used_local_fallback: true,
     };
   }
 
   async stop(scheduleId: string): Promise<void> {
     if (this.activeScheduleId !== scheduleId) return;
-    this.player?.pause();
+    if (this.player != null) {
+      this.player.loop = false;
+      this.player.pause();
+    }
     this.activeScheduleId = null;
   }
 
@@ -78,16 +88,36 @@ export class ExpoAudioPlayback implements AudioPlaybackPort {
     if (expoAudio == null) return false;
 
     await this.ensureAudioMode(expoAudio);
+    const player = this.ensurePlayer(expoAudio);
+    player.pause();
+    player.replace(buildAudioDataUri(data, format));
+    player.loop = true;
+    player.volume = 1;
+    this.activeScheduleId = scheduleId;
+    player.play();
+    return true;
+  }
+
+  private async playBundledAlarm(scheduleId: string): Promise<boolean> {
+    const expoAudio = await loadExpoAudio();
+    if (expoAudio == null) return false;
+
+    await this.ensureAudioMode(expoAudio);
+    const player = this.ensurePlayer(expoAudio);
+    player.pause();
+    player.replace(LOCAL_ALARM_SOUND);
+    player.loop = true;
+    player.volume = 1;
+    this.activeScheduleId = scheduleId;
+    player.play();
+    return true;
+  }
+
+  private ensurePlayer(expoAudio: ExpoAudioModule): AudioPlayerLike {
     if (this.player == null) {
       this.player = expoAudio.createAudioPlayer(null);
     }
-
-    this.player.pause();
-    this.player.replace(buildAudioDataUri(data, format));
-    this.player.volume = 1;
-    this.activeScheduleId = scheduleId;
-    this.player.play();
-    return true;
+    return this.player;
   }
 
   private async ensureAudioMode(expoAudio: ExpoAudioModule): Promise<void> {
@@ -97,7 +127,7 @@ export class ExpoAudioPlayback implements AudioPlaybackPort {
           allowsRecording: false,
           interruptionMode: 'doNotMix',
           playsInSilentMode: true,
-          shouldPlayInBackground: false,
+          shouldPlayInBackground: true,
           shouldRouteThroughEarpiece: false,
         })
         .catch(() => undefined);
@@ -108,7 +138,6 @@ export class ExpoAudioPlayback implements AudioPlaybackPort {
 
 async function loadExpoAudio(): Promise<ExpoAudioModule | null> {
   try {
-    // Optional peer dependency for environments that have not installed expo-audio yet.
     const mod = await import('expo-audio');
     if (typeof mod.createAudioPlayer !== 'function') return null;
     return mod as unknown as ExpoAudioModule;

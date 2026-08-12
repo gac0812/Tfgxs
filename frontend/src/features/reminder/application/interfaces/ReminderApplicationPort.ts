@@ -4,6 +4,7 @@ import type {
   ReminderDeliveryReceipt,
   ReminderDisposition,
   ReminderRegistration,
+  ReminderStrength,
   ReminderTrigger,
 } from '../../domain';
 
@@ -45,6 +46,8 @@ export interface ReminderApplicationPort {
   handleTime(tick: { observed_at: string }): Promise<void>;
   handleLocation(sample: LocationSample): Promise<void>;
   deliver(trigger: ReminderTrigger): Promise<ReminderDeliveryReceipt>;
+  /** 试验台：按强度立即触发一次送达（不依赖真实日程时钟）。 */
+  experimentStrength(strength: ReminderStrength): Promise<ReminderDeliveryReceipt>;
   confirm(scheduleId: string, confirmedAt: string): Promise<ReminderApplicationResult>;
   snooze(request: ReminderSnoozeRequest): Promise<ReminderApplicationResult>;
 }

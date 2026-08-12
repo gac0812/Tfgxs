@@ -43,12 +43,14 @@ const PERMISSION_PROMPTS: Partial<Record<DevicePermission, { title: string; mess
   },
   location_background: {
     title: '需要后台定位权限',
-    message: '允许“始终”或后台定位后，应用在后台也能接收地理围栏进出事件。',
+    message: '允许“始终允许”定位后，应用在后台也能接收地理围栏进出事件。',
   },
 };
 
-const DIRECT_REQUEST: ReadonlySet<DevicePermission> = new Set([
-  'notifications',
+/** 仅通知可在无前置说明时直接弹系统框；定位需先说明，且常要回落设置页。 */
+const DIRECT_REQUEST: ReadonlySet<DevicePermission> = new Set(['notifications']);
+
+const LOCATION_PERMISSIONS: ReadonlySet<DevicePermission> = new Set([
   'location_foreground',
   'location_background',
 ]);
@@ -84,8 +86,9 @@ export function useReminderPermissionsOnLaunch(
     };
 
     const promptNext = async () => {
-      if (busyRef.current || cancelled) return;
+      if (busyRef.current || cancelled || awaitingReturnRef.current) return;
       busyRef.current = true;
+      let queueNext = false;
 
       try {
         const status = await device.getStatus();
@@ -97,42 +100,62 @@ export function useReminderPermissionsOnLaunch(
         const prompt = PERMISSION_PROMPTS[missing];
         if (prompt == null) {
           skippedRef.current.add(missing);
+          queueNext = true;
           return;
         }
 
+        // 通知：直接系统授权框。
         if (DIRECT_REQUEST.has(missing)) {
-          const shouldAuthorize =
-            missing === 'notifications'
-              ? true
-              : await confirmAsync(dialog, prompt.title, prompt.message);
-          if (!shouldAuthorize) {
+          const granted = await device.requestPermission(missing);
+          if (!granted) {
             skippedRef.current.add(missing);
           } else {
-            const granted = await device.requestPermission(missing);
-            if (!granted) {
-              skippedRef.current.add(missing);
-            } else {
-              onPermissionsUpdated?.();
-            }
+            onPermissionsUpdated?.();
           }
-          busyRef.current = false;
-          setTimeout(runPrompt, 350);
+          queueNext = true;
           return;
         }
 
         const shouldAuthorize = await confirmAsync(dialog, prompt.title, prompt.message);
         if (!shouldAuthorize) {
           skippedRef.current.add(missing);
-        } else {
+          queueNext = true;
+          return;
+        }
+
+        // 定位：先等应用内说明框关掉，再申请系统权限；失败则跳转设置，避免“点了没反应还连弹”。
+        if (LOCATION_PERMISSIONS.has(missing)) {
+          await delay(350);
+          const granted = await device.requestPermission(missing);
+          if (granted) {
+            onPermissionsUpdated?.();
+            queueNext = true;
+            return;
+          }
           awaitingReturnRef.current = true;
-          await device.openSettings(missing);
+          const opened = await device.openSettings(missing);
+          if (!opened) {
+            awaitingReturnRef.current = false;
+            skippedRef.current.add(missing);
+            queueNext = true;
+          }
+          return;
+        }
+
+        // 精确闹钟 / 悬浮窗等：跳转系统设置，回来后再继续。
+        awaitingReturnRef.current = true;
+        const opened = await device.openSettings(missing);
+        if (!opened) {
+          awaitingReturnRef.current = false;
+          skippedRef.current.add(missing);
+          queueNext = true;
         }
       } finally {
         busyRef.current = false;
       }
 
-      if (!awaitingReturnRef.current) {
-        setTimeout(runPrompt, 200);
+      if (queueNext && !awaitingReturnRef.current) {
+        setTimeout(runPrompt, 250);
       }
     };
 
@@ -173,13 +196,25 @@ export function useReminderPermissionsOnLaunch(
 
 function confirmAsync(dialog: AlertDialogPort, title: string, message: string): Promise<boolean> {
   return new Promise((resolve) => {
+    let settled = false;
+    const finish = (value: boolean) => {
+      if (settled) return;
+      settled = true;
+      resolve(value);
+    };
     void dialog.show({
       title,
       message,
+      cancelable: true,
+      onDismiss: () => finish(false),
       buttons: [
-        { text: '暂不', style: 'cancel', onPress: () => resolve(false) },
-        { text: '去授权', onPress: () => resolve(true) },
+        { text: '暂不', style: 'cancel', onPress: () => finish(false) },
+        { text: '去授权', onPress: () => finish(true) },
       ],
     });
   });
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

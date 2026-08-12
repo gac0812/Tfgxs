@@ -1,7 +1,25 @@
-import { useCallback, useEffect, useMemo, type PropsWithChildren } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  type PropsWithChildren,
+} from 'react';
 
-import { createAppServices } from './composition/createAppServices';
 import { useReminderPermissionsOnLaunch } from '../features/reminder';
+
+import { createAppServices, type AppServices } from './composition/createAppServices';
+
+const AppServicesContext = createContext<AppServices | null>(null);
+
+export function useAppServices(): AppServices {
+  const value = useContext(AppServicesContext);
+  if (value == null) {
+    throw new Error('useAppServices must be used within AppProviders');
+  }
+  return value;
+}
 
 /** 组合应用级提供器，并启动提醒运行时。 */
 export function AppProviders({ children }: PropsWithChildren) {
@@ -22,5 +40,5 @@ export function AppProviders({ children }: PropsWithChildren) {
     };
   }, [services]);
 
-  return children;
+  return <AppServicesContext.Provider value={services}>{children}</AppServicesContext.Provider>;
 }

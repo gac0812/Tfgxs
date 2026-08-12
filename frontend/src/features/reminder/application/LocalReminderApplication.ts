@@ -6,6 +6,7 @@ import type {
   LocationMonitorEvent,
   LocationWatchHandle,
   AlarmScheduleReceipt,
+  AlarmNativeEvent,
 } from './interfaces';
 import type {
   DeliveryChannel,
@@ -16,6 +17,7 @@ import type {
   ReminderDisposition,
   ReminderRegistration,
   ReminderRuntimeState,
+  ReminderStrength,
   ReminderTrigger,
   ReminderTriggerReason,
 } from '../domain';
@@ -39,9 +41,12 @@ export class LocalReminderApplication implements ReminderApplicationPort {
   private timeListenerId: string | null = null;
   private unsubscribePresenter: (() => void) | null = null;
   private unsubscribeSchedules: (() => void) | null = null;
+  private unsubscribeAlarms: (() => void) | null = null;
   private readonly registrations = new Map<string, RegistrationRecord>();
   private readonly activeDeliveries = new Set<string>();
   private readonly deliverLocks = new Set<string>();
+  /** 原生已响铃、由原生 UI 承接展示的日程；JS 不再叠加弹窗/TTS。 */
+  private readonly nativePresented = new Set<string>();
   private rebuildChain: Promise<void> = Promise.resolve();
 
   constructor(readonly dependencies: ReminderApplicationDependencies) {}
@@ -53,6 +58,10 @@ export class LocalReminderApplication implements ReminderApplicationPort {
     this.unsubscribePresenter = this.dependencies.presenter.onAction((event) => {
       void this.handlePresentationAction(event.schedule_id, event.action);
     });
+    this.unsubscribeAlarms =
+      this.dependencies.alarms.subscribe?.((event) => {
+        void this.handleNativeAlarmEvent(event);
+      }) ?? null;
 
     // IntervalTimeListener 不在 start 时同步打点；先挂上 listener id 再 rebuild。
     const timeHandle = await this.dependencies.time.start(
@@ -63,6 +72,7 @@ export class LocalReminderApplication implements ReminderApplicationPort {
     );
     this.timeListenerId = timeHandle.listener_id;
 
+    await this.hydrateNativeDispositions();
     await this.enqueueRebuild();
 
     this.unsubscribeSchedules = this.dependencies.schedules.subscribe(() => {
@@ -78,6 +88,8 @@ export class LocalReminderApplication implements ReminderApplicationPort {
     this.unsubscribePresenter = null;
     this.unsubscribeSchedules?.();
     this.unsubscribeSchedules = null;
+    this.unsubscribeAlarms?.();
+    this.unsubscribeAlarms = null;
 
     if (this.timeListenerId != null) {
       await this.dependencies.time.stop(this.timeListenerId);
@@ -95,6 +107,7 @@ export class LocalReminderApplication implements ReminderApplicationPort {
     this.registrations.clear();
     this.activeDeliveries.clear();
     this.deliverLocks.clear();
+    this.nativePresented.clear();
     this.started = false;
   }
 
@@ -196,6 +209,65 @@ export class LocalReminderApplication implements ReminderApplicationPort {
     }
   }
 
+  async experimentStrength(strength: ReminderStrength): Promise<ReminderDeliveryReceipt> {
+    const scheduleId = `experiment-${strength}`;
+    const titles: Record<ReminderStrength, string> = {
+      low: '轻度提醒试验',
+      medium: '中度提醒试验',
+      high: '强度提醒试验',
+    };
+
+    this.activeDeliveries.delete(scheduleId);
+    this.deliverLocks.delete(scheduleId);
+    this.nativePresented.delete(scheduleId);
+    await this.teardownDelivery(scheduleId);
+    await this.patchRuntime(scheduleId, emptyRuntime());
+
+    const nowIso = new Date().toISOString();
+    const schedule: LocalReminderSchedule = {
+      id: scheduleId,
+      account_id: 'experiment-account',
+      title: titles[strength],
+      schedule_type: 'time',
+      schedule_kind: 'once',
+      is_all_day: false,
+      start_time: nowIso,
+      end_time: null,
+      timezone: 'Asia/Shanghai',
+      recurrence_rule: null,
+      location_name: strength === 'low' ? '仅系统通知' : '统一提醒页',
+      latitude: null,
+      longitude: null,
+      geofence_radius_meters: 100,
+      reminder: {
+        reminder_type: 'at_time',
+        reminder_trigger_at: nowIso,
+        reminder_offset_minutes: null,
+        reminder_strength: strength,
+      },
+      runtime: emptyRuntime(),
+      status: 'active',
+      revision: 1,
+      cloud_revision: 1,
+      updated_at: nowIso,
+    };
+
+    this.registrations.set(scheduleId, {
+      schedule_id: scheduleId,
+      time_listener_id: this.timeListenerId,
+      location_listener_id: null,
+      alarm_id: null,
+      schedule,
+    });
+
+    return this.deliver({
+      reminder_id: `reminder-${scheduleId}`,
+      schedule_id: scheduleId,
+      reason: 'mock',
+      triggered_at: nowIso,
+    });
+  }
+
   async deliver(trigger: ReminderTrigger): Promise<ReminderDeliveryReceipt> {
     if (this.deliverLocks.has(trigger.schedule_id)) {
       return {
@@ -264,12 +336,8 @@ export class LocalReminderApplication implements ReminderApplicationPort {
         }
 
         if (plan.usePopup) {
+          // 统一提醒页由 presenter 承接；popup 端口保持空操作。
           await this.dependencies.presenter.show(request);
-          await this.dependencies.popup.show({
-            popup_id: `reminder-${schedule.id}`,
-            title: schedule.title,
-            body: schedule.location_name ?? schedule.title,
-          });
           channels.push('popup');
         }
 
@@ -278,6 +346,7 @@ export class LocalReminderApplication implements ReminderApplicationPort {
           channels.push('vibration');
         }
 
+        let audioPlayed = false;
         if (plan.useAudio) {
           let audioReceipt = await this.dependencies.audio.playTts({ schedule_id: schedule.id });
           if (!audioReceipt.played) {
@@ -285,8 +354,17 @@ export class LocalReminderApplication implements ReminderApplicationPort {
               schedule_id: schedule.id,
             });
           }
-          channels.push(audioReceipt.used_local_fallback ? 'local_sound' : 'tts');
+          audioPlayed = audioReceipt.played;
+          if (audioPlayed) {
+            channels.push(audioReceipt.used_local_fallback ? 'local_sound' : 'tts');
+          }
           usedFallbackAudio = audioReceipt.used_local_fallback;
+        }
+
+        // JS 先送达时取消原生闹钟；仅在 JS 侧已成功出声（或无需音频）时停铃。
+        await this.cancelScheduledAlarm(schedule.id);
+        if (!plan.useAudio || audioPlayed) {
+          await this.dependencies.alarms.stopRinging?.();
         }
 
         return {
@@ -517,6 +595,77 @@ export class LocalReminderApplication implements ReminderApplicationPort {
     await this.snooze({ schedule_id: scheduleId, snooze_until: null });
   }
 
+  private async handleNativeAlarmEvent(event: AlarmNativeEvent): Promise<void> {
+    if (!event.schedule_id) return;
+    if (event.type === 'fired') {
+      await this.acknowledgeNativeFire(event.schedule_id, event.at);
+      return;
+    }
+    if (event.type === 'snoozed') {
+      await this.snooze({ schedule_id: event.schedule_id, snooze_until: null });
+      return;
+    }
+    await this.confirm(event.schedule_id, event.at);
+  }
+
+  /**
+   * 原生已承接响铃 UI：只落 pending disposition，避免 JS 再弹 Alert/TTS。
+   * handleTime 会因 pending / activeDeliveries 跳过，从而消除双通道连响。
+   */
+  private async acknowledgeNativeFire(scheduleId: string, firedAt: string): Promise<void> {
+    const runtime = (await this.readRuntime(scheduleId)) ?? emptyRuntime();
+    if (
+      runtime.reminder_disposition_state === 'confirmed' ||
+      runtime.reminder_disposition_state === 'pending'
+    ) {
+      this.nativePresented.add(scheduleId);
+      this.activeDeliveries.add(scheduleId);
+      return;
+    }
+
+    this.nativePresented.add(scheduleId);
+    this.activeDeliveries.add(scheduleId);
+    await this.cancelScheduledAlarm(scheduleId);
+    await this.patchRuntime(scheduleId, {
+      ...runtime,
+      reminder_disposition_state: 'pending',
+      next_trigger_at: null,
+      disposition_updated_at: firedAt,
+      sync_status: 'pending',
+    });
+    await this.dependencies.state.setDisposition(scheduleId, {
+      schedule_id: scheduleId,
+      state: 'pending',
+      updated_at: firedAt,
+      snoozed_until: null,
+      sync_status: 'pending',
+    });
+  }
+
+  private async hydrateNativeDispositions(): Promise<void> {
+    const rows = await this.dependencies.alarms.consumeNativeDispositions?.();
+    if (rows == null || rows.length === 0) return;
+
+    for (const row of rows) {
+      if (row.state === 'confirmed') {
+        await this.confirm(row.schedule_id, row.updated_at);
+        continue;
+      }
+      if (row.state === 'snoozed') {
+        await this.snooze({ schedule_id: row.schedule_id, snooze_until: null });
+        continue;
+      }
+      await this.acknowledgeNativeFire(row.schedule_id, row.updated_at);
+    }
+  }
+
+  private async cancelScheduledAlarm(scheduleId: string): Promise<void> {
+    const registration = this.registrations.get(scheduleId);
+    if (registration?.alarm_id == null) return;
+    await this.dependencies.alarms.cancel(registration.alarm_id);
+    registration.alarm_id = null;
+  }
+
   private async handleLocationMonitorEvent(event: LocationMonitorEvent): Promise<void> {
     await this.handleLocation(event.sample);
   }
@@ -524,6 +673,8 @@ export class LocalReminderApplication implements ReminderApplicationPort {
   private isSchedulable(schedule: LocalReminderSchedule): boolean {
     if (schedule.status !== 'active') return false;
     if (schedule.runtime.reminder_disposition_state === 'confirmed') return false;
+    // pending 表示已送达待确认/停铃，不应再挂新闹钟。
+    if (schedule.runtime.reminder_disposition_state === 'pending') return false;
     return true;
   }
 
@@ -546,6 +697,8 @@ export class LocalReminderApplication implements ReminderApplicationPort {
     await this.dependencies.vibration.stop();
     await this.dependencies.popup.dismiss(`reminder-${scheduleId}`);
     await this.dependencies.systemNotification.cancel(`reminder-${scheduleId}`);
+    await this.dependencies.alarms.stopRinging?.();
+    this.nativePresented.delete(scheduleId);
   }
 
   private async watchLocationSchedule(
