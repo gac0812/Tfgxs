@@ -142,16 +142,35 @@ async function requestLocationPermission(
   try {
     const Location = await import('expo-location');
     if (permission === 'location_foreground') {
+      const current = await Location.getForegroundPermissionsAsync();
+      if (current.status === Location.PermissionStatus.GRANTED) {
+        return true;
+      }
+      // 系统不再弹授权框时不要空等，交给上层 openSettings。
+      if (current.canAskAgain === false) {
+        return false;
+      }
       const result = await Location.requestForegroundPermissionsAsync();
       return result.status === Location.PermissionStatus.GRANTED;
     }
 
     const foreground = await Location.getForegroundPermissionsAsync();
     if (foreground.status !== Location.PermissionStatus.GRANTED) {
+      if (foreground.canAskAgain === false) {
+        return false;
+      }
       const requested = await Location.requestForegroundPermissionsAsync();
       if (requested.status !== Location.PermissionStatus.GRANTED) {
         return false;
       }
+    }
+
+    const currentBackground = await Location.getBackgroundPermissionsAsync();
+    if (currentBackground.status === Location.PermissionStatus.GRANTED) {
+      return true;
+    }
+    if (currentBackground.canAskAgain === false) {
+      return false;
     }
 
     const background = await Location.requestBackgroundPermissionsAsync();

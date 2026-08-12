@@ -56,7 +56,13 @@
           "defaultChannel": "timeflow-reminders"
         }
       ],
-      "./plugins/withTimeflowAlarm"
+      "./plugins/withTimeflowAlarm",
+      [
+        "./plugins/withTimeflowBaiduLocation",
+        {
+          "apiKey": "ibwffiFibPLPMROluSW6HLem0gJ6V9wC"
+        }
+      ]
     ]
   }
 }

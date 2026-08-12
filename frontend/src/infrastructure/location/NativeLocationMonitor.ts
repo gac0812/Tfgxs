@@ -11,12 +11,16 @@ import type { LocationSample } from '../../features/reminder/domain';
 import { distanceMeters } from '../../features/reminder/domain/geofence';
 import type { LocationObservation } from '../../contracts/reminder';
 
-import {
-  GEOFENCE_TASK_NAME,
-  subscribeGeofenceTaskEvents,
-  type GeofenceTaskPayload,
-} from './geofenceTask';
 import type { LocationProvider } from './LocationProvider';
+import {
+  baiduGetCurrentPosition,
+  baiduInit,
+  baiduStartUpdating,
+  baiduStopUpdating,
+  isBaiduLocationAvailable,
+  subscribeBaiduLocation,
+  type BaiduLocationSample,
+} from './native/BaiduLocationBridge';
 
 type ActiveWatch = {
   listener_id: string;
@@ -25,27 +29,21 @@ type ActiveWatch = {
   inside: boolean | null;
 };
 
-type LocationModule = typeof import('expo-location');
-type PositionSubscription = { remove: () => void };
-
 /**
- * 基于 expo-location 的围栏/定位适配器：
- * - 有后台定位权限时走系统 geofencing
- * - 否则退化为前台 watchPosition + Haversine 边沿检测
+ * 基于百度定位 SDK 的围栏/定位适配器：
+ * - 连续定位采样（非 Google Geofencing）
+ * - 应用侧 Haversine 计算进出圈边沿
  */
 export class NativeLocationMonitor implements LocationMonitorPort, LocationProvider {
   private readonly watches = new Map<string, ActiveWatch>();
   private readonly scheduleToListener = new Map<string, string>();
   private lastSample: LocationSample | null = null;
-  private positionSub: PositionSubscription | null = null;
   private syncChain: Promise<void> = Promise.resolve();
-  private readonly unsubscribeTask: () => void;
+  private unsubscribeLocation: (() => void) | null = null;
+  private started = false;
   private readonly appStateSub: NativeEventSubscription;
 
   constructor() {
-    this.unsubscribeTask = subscribeGeofenceTaskEvents((payload) => {
-      this.handleGeofenceTask(payload);
-    });
     this.appStateSub = AppState.addEventListener('change', this.handleAppState);
   }
 
@@ -113,17 +111,14 @@ export class NativeLocationMonitor implements LocationMonitorPort, LocationProvi
   }
 
   async getCurrentSample(): Promise<LocationObservation | null> {
-    const Location = await loadExpoLocation();
-    if (Location == null) return this.lastSample;
-
+    if (!isBaiduLocationAvailable()) return this.lastSample;
     try {
-      const permission = await Location.getForegroundPermissionsAsync();
-      if (permission.status !== 'granted') return this.lastSample;
-
-      const position = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
-      const sample = toSample(position);
+      if (!this.started) {
+        await baiduInit(null);
+      }
+      const current = await baiduGetCurrentPosition();
+      if (current == null) return this.lastSample;
+      const sample = toSample(current);
       this.lastSample = sample;
       return sample;
     } catch {
@@ -132,8 +127,11 @@ export class NativeLocationMonitor implements LocationMonitorPort, LocationProvi
   }
 
   dispose(): void {
-    this.unsubscribeTask();
+    this.unsubscribeLocation?.();
+    this.unsubscribeLocation = null;
     this.appStateSub.remove();
+    void baiduStopUpdating();
+    this.started = false;
   }
 
   private readonly handleAppState = (state: AppStateStatus): void => {
@@ -160,90 +158,33 @@ export class NativeLocationMonitor implements LocationMonitorPort, LocationProvi
   }
 
   private async syncMonitoring(): Promise<void> {
-    const Location = await loadExpoLocation();
-    if (Location == null) {
-      await this.stopPositionWatch();
+    if (this.watches.size === 0) {
+      this.unsubscribeLocation?.();
+      this.unsubscribeLocation = null;
+      if (this.started) {
+        await baiduStopUpdating();
+        this.started = false;
+      }
       return;
     }
 
-    const regions = [...this.watches.values()].map((watch) => ({
-      identifier: watch.request.schedule_id,
-      latitude: watch.request.center.latitude,
-      longitude: watch.request.center.longitude,
-      radius: Math.max(watch.request.radius_meters, 1),
-      notifyOnEnter: true,
-      notifyOnExit: true,
-    }));
-
-    if (regions.length === 0) {
-      await stopGeofencingIfStarted(Location);
-      await this.stopPositionWatch();
+    if (!isBaiduLocationAvailable()) {
       return;
     }
 
-    const foreground = await Location.getForegroundPermissionsAsync();
-    if (foreground.status !== 'granted') {
-      await stopGeofencingIfStarted(Location);
-      await this.stopPositionWatch();
-      return;
-    }
-
-    const wantsBackground = [...this.watches.values()].some((watch) => watch.request.background);
-    const background = await Location.getBackgroundPermissionsAsync();
-    const canGeofence = wantsBackground && background.status === 'granted';
-
-    if (canGeofence) {
-      await this.stopPositionWatch();
-      await Location.startGeofencingAsync(GEOFENCE_TASK_NAME, regions);
-      return;
-    }
-
-    await stopGeofencingIfStarted(Location);
-    await this.ensurePositionWatch(Location);
-  }
-
-  private async ensurePositionWatch(Location: LocationModule): Promise<void> {
-    if (this.positionSub != null) return;
-    this.positionSub = await Location.watchPositionAsync(
-      {
-        accuracy: Location.Accuracy.Balanced,
-        distanceInterval: 25,
-        timeInterval: 5_000,
-      },
-      (position) => {
-        const sample = toSample(position);
+    if (this.unsubscribeLocation == null) {
+      this.unsubscribeLocation = subscribeBaiduLocation((payload) => {
+        const sample = toSample(payload);
         this.lastSample = sample;
         for (const watch of this.watches.values()) {
           this.emitForWatch(watch, sample, false);
         }
-      },
-    );
-  }
+      });
+    }
 
-  private async stopPositionWatch(): Promise<void> {
-    this.positionSub?.remove();
-    this.positionSub = null;
-  }
-
-  private handleGeofenceTask(payload: GeofenceTaskPayload): void {
-    const listenerId = this.scheduleToListener.get(payload.schedule_id);
-    if (listenerId == null) return;
-    const watch = this.watches.get(listenerId);
-    if (watch == null) return;
-
-    const sample: LocationSample = {
-      latitude: payload.latitude,
-      longitude: payload.longitude,
-      accuracy_meters: payload.radius,
-      observed_at: payload.observed_at,
-    };
-    this.lastSample = sample;
-    watch.inside = payload.event === 'enter';
-    watch.listener({
-      schedule_id: payload.schedule_id,
-      sample,
-      phase: payload.event === 'enter' ? 'entered' : 'left',
-    });
+    await baiduInit(null);
+    await baiduStartUpdating(5_000);
+    this.started = true;
   }
 
   private emitForWatch(watch: ActiveWatch, sample: LocationSample, forcePhase: boolean): void {
@@ -272,33 +213,11 @@ export class NativeLocationMonitor implements LocationMonitorPort, LocationProvi
   }
 }
 
-function toSample(position: {
-  coords: { latitude: number; longitude: number; accuracy: number | null };
-  timestamp: number;
-}): LocationSample {
+function toSample(payload: BaiduLocationSample): LocationSample {
   return {
-    latitude: position.coords.latitude,
-    longitude: position.coords.longitude,
-    accuracy_meters: position.coords.accuracy ?? 0,
-    observed_at: new Date(position.timestamp).toISOString(),
+    latitude: payload.latitude,
+    longitude: payload.longitude,
+    accuracy_meters: payload.accuracy ?? 0,
+    observed_at: payload.observedAt || new Date().toISOString(),
   };
-}
-
-/** hasStartedGeofencingAsync 在无后台定位权限时会抛错，不能直接调用。 */
-async function stopGeofencingIfStarted(Location: LocationModule): Promise<void> {
-  try {
-    if (await Location.hasStartedGeofencingAsync(GEOFENCE_TASK_NAME)) {
-      await Location.stopGeofencingAsync(GEOFENCE_TASK_NAME);
-    }
-  } catch {
-    // 无后台定位权限时视为未启动。
-  }
-}
-
-async function loadExpoLocation(): Promise<LocationModule | null> {
-  try {
-    return await import('expo-location');
-  } catch {
-    return null;
-  }
 }
