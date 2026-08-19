@@ -2,14 +2,14 @@
 
 # TimeFlow
 
+TimeFlow 是一款语音优先的个人日程助手，帮你用说话的方式管理时间、地点和提醒。
+
+言出成约，时至如约。
+
 [![TimeFlow](https://img.shields.io/website?url=https%3A%2F%2Fappetize.io%2Fapp%2Fb_tk7kw3vv4rhigcusy2uxvxof4e%3Fdevice%3Dpixel7%26osVersion%3D13.0%26toolbar%3Dtrue&up_message=online&down_message=offline&label=TimeFlow)](https://appetize.io/app/b_tk7kw3vv4rhigcusy2uxvxof4e?device=pixel7&osVersion=13.0&toolbar=true)
 [![Frontend CI](https://img.shields.io/github/check-runs/1024XEngineer/timeflow/main?nameFilter=Frontend%20(lint%2C%20types%2C%20build)&label=Frontend%20CI&logo=github)](https://github.com/1024XEngineer/timeflow/actions/workflows/ci.yml)
 [![Backend CI](https://img.shields.io/github/check-runs/1024XEngineer/timeflow/main?nameFilter=Backend%20(lint%2C%20types%2C%20tests)&label=Backend%20CI&logo=github)](https://github.com/1024XEngineer/timeflow/actions/workflows/ci.yml)
 [![codecov](https://img.shields.io/codecov/c/github/1024XEngineer/timeflow?logo=codecov&label=codecov)](https://codecov.io/gh/1024XEngineer/timeflow)
-
-TimeFlow 是一款语音优先的个人日程助手，帮你用说话的方式管理时间、地点和提醒。
-
-言出成约，时至如约。
 
 </div>
 
