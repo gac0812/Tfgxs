@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="TimeFlow 是一款语音优先的个人日程助手。用语音管理日程与提醒。言出成约，时至如约。"
+    />
+    <title>TimeFlow · 言出成约，时至如约</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,700;1,6..96,400&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,400&family=Noto+Sans+SC:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main" data-i18n="skip">跳到正文</a>
+    <div class="atmosphere" aria-hidden="true"></div>
+    <div class="dot-grid" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <header class="nav">
+      <div class="nav-inner">
+        <a class="wordmark" href="#top" aria-label="TimeFlow 首页">
+          <span class="wordmark-time">Time</span><span class="wordmark-flow">flow</span>
+        </a>
+        <nav class="nav-links" aria-label="页面导航">
+          <a href="#how" data-i18n="navHow">它如何工作</a>
+          <a href="#features" data-i18n="navFeatures">能力</a>
+          <a href="#product" data-i18n="navProduct">产品</a>
+          <a href="#product" data-i18n="navOpen">开源</a>
+          <a href="#about" data-i18n="navAbout">关于</a>
+        </nav>
+        <div class="nav-actions">
+          <div class="lang" role="group" aria-label="语言">
+            <button type="button" class="lang-btn is-active" data-lang="zh" aria-pressed="true">
+              中
+            </button>
+            <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+          </div>
+          <a class="btn btn-ghost" href="https://github.com/1024XEngineer/timeflow" data-i18n="navSource"
+            >源码</a
+          >
+          <a
+            class="btn btn-solid"
+            href="https://github.com/1024XEngineer/timeflow/releases"
+            data-i18n="navTry"
+            >下载</a
+          >
+          <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="mobile-nav">
+            <span class="sr-only" data-i18n="menu">菜单</span>
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+          </button>
+        </div>
+      </div>
+      <div id="mobile-nav" class="mobile-nav" hidden>
+        <a href="#how" data-i18n="navHow">它如何工作</a>
+        <a href="#features" data-i18n="navFeatures">能力</a>
+        <a href="#product" data-i18n="navProduct">产品</a>
+        <a href="#product" data-i18n="navOpen">开源</a>
+        <a href="#about" data-i18n="navAbout">关于</a>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero-wrap" id="top">
+        <img
+          class="hero-art hero-art-left"
+          src="./hero-left.jpg"
+          alt=""
+          aria-hidden="true"
+          width="733"
+          height="1100"
+          decoding="async"
+        />
+        <img
+          class="hero-art hero-art-right"
+          src="./hero-right.jpg"
+          alt=""
+          aria-hidden="true"
+          width="733"
+          height="1100"
+          decoding="async"
+        />
+        <div class="hero">
+          <div class="hero-copy">
+          <p class="eyebrow">
+            <svg class="spark" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 3.5 13.8 9l5.2 1.7-5.2 1.7L12 18l-1.8-5.6L5 10.7 10.2 9 12 3.5Z"
+                fill="none"
+                stroke="currentColor"
+                stroke-linejoin="round"
+                stroke-width="1.65"
+              />
+              <path
+                d="m18.3 15.6.65 1.95 1.95.65-1.95.65-.65 1.95-.65-1.95-1.95-.65 1.95-.65.65-1.95Z"
+                fill="currentColor"
+              />
+            </svg>
+            <span data-i18n="eyebrow">语音优先的个人日程助手</span>
+          </p>
+          <h1 id="headline" aria-label="言出成约，时至如约。">
+            <span class="headline-line" id="h1a">言出成约，</span>
+            <span class="headline-line" id="h1b">时至如约。</span>
+          </h1>
+          <p class="lead" data-i18n="lead">
+            用语音管理日程与提醒。说一句话即可写入日历；到点，或到达指定地点时，会收到提醒。
+          </p>
+          <div class="hero-cta">
+            <a
+              class="btn btn-solid btn-lg"
+              href="https://github.com/1024XEngineer/timeflow/releases"
+              data-i18n="ctaTry"
+              >下载</a
+            >
+            <a
+              class="btn btn-ghost btn-lg"
+              href="https://github.com/1024XEngineer/timeflow"
+              data-i18n="ctaSource"
+              >查看 GitHub</a
+            >
+          </div>
+        </div>
+
+        <div class="hero-stage">
+          <article class="phone" id="phone" aria-label="日历主界面示意">
+            <div class="phone-screen">
+              <div class="calendar-layer" id="calendar-layer">
+                <div class="cal-scroll">
+                  <header class="cal-top">
+                    <h2 class="cal-date" id="cal-date">8月27日 星期四</h2>
+                    <div class="account-actions">
+                      <div class="user-pill">
+                        <span class="avatar">T</span>
+                        <span class="username" data-i18n="you">Timeflow</span>
+                      </div>
+                      <span class="sign-out" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="16" height="16">
+                          <path
+                            d="M10 5H6.8A1.8 1.8 0 0 0 5 6.8v10.4A1.8 1.8 0 0 0 6.8 19H10M14.5 8l4 4-4 4M18 12H9"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.8"
+                          />
+                        </svg>
+                      </span>
+                    </div>
+                  </header>
+                  <div class="month-card">
+                    <div class="month-head">
+                      <button type="button" class="month-nav" id="month-prev" aria-label="上个月">‹</button>
+                      <strong id="month-title">2026年8月</strong>
+                      <button type="button" class="month-nav" id="month-next" aria-label="下个月">›</button>
+                    </div>
+                    <div class="weekdays" id="weekdays"></div>
+                    <div class="cal-grid" id="cal-grid"></div>
+                  </div>
+                  <section class="agenda">
+                    <div class="agenda-head">
+                      <h3 id="agenda-title">今日安排</h3>
+                      <span class="agenda-count" id="agenda-count">2 项</span>
+                    </div>
+                    <ul class="agenda-list" id="agenda-list"></ul>
+                    <div class="agenda-empty" id="agenda-empty" hidden>
+                      <p class="empty-title" id="empty-title"></p>
+                      <p class="empty-detail" id="empty-detail"></p>
+                    </div>
+                    <div class="location-section">
+                      <div class="agenda-head">
+                        <h3 data-i18n="placeReminders">地点提醒</h3>
+                        <span class="agenda-count" data-i18n="placeCount">1 项</span>
+                      </div>
+                      <div class="loc-row">
+                        <span class="loc-pin" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" width="18" height="18">
+                            <path
+                              d="M20 10c0 5.25-8 11-8 11S4 15.25 4 10a8 8 0 1 1 16 0Z"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="1.8"
+                            />
+                            <circle cx="12" cy="10" r="2.25" fill="currentColor" />
+                          </svg>
+                        </span>
+                        <span class="loc-copy">
+                          <span class="loc-title" data-i18n="placeTitle">取快递</span>
+                          <span class="loc-meta" data-i18n="placeMeta">公司楼下</span>
+                        </span>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+                <div class="voice-dock">
+                  <button type="button" class="call-fab" id="call-fab" aria-label="进入免提通话">
+                    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                      <path
+                        d="M6.6 10.8c1.3 2.6 3.4 4.7 6 6l2-2c.3-.3.7-.4 1-.3 1.1.4 2.3.6 3.5.6.6 0 1 .4 1 1v3.5c0 .6-.4 1-1 1C10.6 20.6 3.4 13.4 3.4 5c0-.6.4-1 1-1H8c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.5.1.3 0 .7-.3 1l-2.1 2.3Z"
+                        fill="none"
+                        stroke="#fff"
+                        stroke-linejoin="round"
+                        stroke-width="1.65"
+                      />
+                    </svg>
+                  </button>
+                  <button type="button" class="ptt" id="ptt" aria-label="按住说话">
+                    <span class="ptt-label" data-i18n="ptt">按住说话</span>
+                    <span class="ptt-wave" aria-hidden="true">
+                      <i></i><i></i><i></i><i></i><i></i>
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="call-layer" id="call-layer" hidden>
+                <button type="button" class="call-collapse" id="call-collapse" aria-label="收起通话">
+                  <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+                    <path
+                      d="M6 9l6 6 6-6"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="1.8"
+                    />
+                  </svg>
+                </button>
+                <div class="transcript" id="transcript"></div>
+                <div class="call-dock">
+                  <p class="call-status" data-i18n="callListening">正在听</p>
+                  <button type="button" class="orb" id="orb" aria-label="语音球">
+                    <span class="orb-ring orb-ring-outer"></span>
+                    <span class="orb-ring orb-ring-inner"></span>
+                    <span class="orb-core">
+                      <span class="orb-wave">
+                        <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                      </span>
+                    </span>
+                  </button>
+                  <button type="button" class="call-end" id="call-end">
+                    <span class="end-icon">
+                      <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+                        <path
+                          d="M6.6 10.8c1.3 2.6 3.4 4.7 6 6l2-2c.3-.3.7-.4 1-.3 1.1.4 2.3.6 3.5.6.6 0 1 .4 1 1v3.5c0 .6-.4 1-1 1C10.6 20.6 3.4 13.4 3.4 5c0-.6.4-1 1-1H8c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.5.1.3 0 .7-.3 1l-2.1 2.3Z"
+                          fill="none"
+                          stroke="#fff"
+                          stroke-linejoin="round"
+                          stroke-width="1.65"
+                        />
+                      </svg>
+                    </span>
+                    <span data-i18n="endCall">结束对话</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+      </section>
+
+      <section class="how" id="how">
+        <div class="slogan-pin" id="slogan-pin">
+          <section class="slogan-stage" id="slogan-stage" tabindex="0" aria-roledescription="carousel" aria-label="产品主张" data-chapter="0">
+            <ol class="stage-ticks" aria-hidden="true"><li class="is-on"></li><li></li><li></li></ol>
+            <div class="stage-board">
+              <div class="stage-copy">
+                <div class="stage-head">
+                  <p class="eyebrow" data-i18n="howEyebrow">它如何工作</p>
+                  <h2 data-i18n="howTitle">说出安排，日历即时更新。</h2>
+                </div>
+                <span class="stage-watermark" id="stage-index" aria-hidden="true">01</span>
+                <p class="stage-line is-fwd" id="stage-line">言出成约，时至如约。</p>
+                <div class="stage-tabs" id="stage-tabs" role="tablist">
+                  <button type="button" class="stage-tab is-active" role="tab" aria-selected="true" data-i18n="rail1k">言出成约</button>
+                  <button type="button" class="stage-tab" role="tab" aria-selected="false" data-i18n="rail2k">日程</button>
+                  <button type="button" class="stage-tab" role="tab" aria-selected="false" data-i18n="rail3k">提醒</button>
+                </div>
+                <div class="stage-meter" aria-hidden="true"><span id="stage-meter"></span></div>
+              </div>
+              <aside class="stage-demo" id="stage-demo" aria-hidden="true">
+                <div class="stage-demo-stack">
+                <article class="phone demo-phone" id="demo-schedule">
+                  <div class="phone-screen">
+                    <div class="calendar-layer">
+                      <div class="cal-scroll">
+                        <header class="cal-top">
+                          <h2 class="cal-date" data-demo-date>8月28日 星期五</h2>
+                          <div class="account-actions">
+                            <div class="user-pill">
+                              <span class="avatar">T</span>
+                              <span class="username" data-i18n="you">Timeflow</span>
+                            </div>
+                            <span class="sign-out" aria-hidden="true">
+                              <svg viewBox="0 0 24 24" width="16" height="16">
+                                <path
+                                  d="M10 5H6.8A1.8 1.8 0 0 0 5 6.8v10.4A1.8 1.8 0 0 0 6.8 19H10M14.5 8l4 4-4 4M18 12H9"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="1.8"
+                                />
+                              </svg>
+                            </span>
+                          </div>
+                        </header>
+                        <div class="month-card">
+                          <div class="month-head">
+                            <span class="month-nav" aria-hidden="true">‹</span>
+                            <strong data-demo-month>2026年8月</strong>
+                            <span class="month-nav" aria-hidden="true">›</span>
+                          </div>
+                          <div class="weekdays" data-demo-weekdays></div>
+                          <div class="cal-grid" data-demo-grid></div>
+                        </div>
+                        <section class="agenda">
+                          <div class="agenda-head">
+                            <h3 data-demo-agenda-title>明日安排</h3>
+                            <span class="agenda-count">
+                              <span class="demo-count-0">1 项</span>
+                              <span class="demo-count-1">2 项</span>
+                            </span>
+                          </div>
+                          <ul class="agenda-list">
+                            <li class="occ-row">
+                              <span class="occ-time">
+                                <span class="occ-start" data-demo-existing-time>11:00</span>
+                                <span class="occ-end" data-demo-existing-end>12:00</span>
+                              </span>
+                              <span class="occ-rail"><span class="occ-dot"></span><span class="occ-line"></span></span>
+                              <span class="occ-card" data-demo-existing>产品评审</span>
+                            </li>
+                            <li class="occ-row is-new demo-event">
+                              <span class="occ-time">
+                                <span class="occ-start" data-demo-spoken-time>15:00</span>
+                                <span class="occ-end" data-demo-spoken-end>16:00</span>
+                              </span>
+                              <span class="occ-rail"><span class="occ-dot"></span><span class="occ-line"></span></span>
+                              <span class="occ-card" data-demo-spoken>取快递</span>
+                            </li>
+                          </ul>
+                        </section>
+                      </div>
+                      <div class="voice-dock">
+                        <span class="call-fab" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" width="20" height="20">
+                            <path
+                              d="M6.6 10.8c1.3 2.6 3.4 4.7 6 6l2-2c.3-.3.7-.4 1-.3 1.1.4 2.3.6 3.5.6.6 0 1 .4 1 1v3.5c0 .6-.4 1-1 1C10.6 20.6 3.4 13.4 3.4 5c0-.6.4-1 1-1H8c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.5.1.3 0 .7-.3 1l-2.1 2.3Z"
+                              fill="none"
+                              stroke="#fff"
+                              stroke-linejoin="round"
+                              stroke-width="1.65"
+                            />
+                          </svg>
+                        </span>
+                        <span class="ptt demo-ptt">
+                          <span class="ptt-label" data-i18n="ptt">按住说话</span>
+                          <span class="ptt-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+                        </span>
+                      </div>
+                      <p class="demo-toast" data-i18n="toast">已记下：明天下午 3:00 取快递</p>
+                    </div>
+                  </div>
+                </article>
+                <article class="phone demo-phone demo-ring" id="demo-remind">
+                  <div class="phone-screen">
+                    <div class="ring-layer">
+                      <p class="ring-brand">Timeflow</p>
+                      <p class="ring-moment" data-i18n="demoMoment">日程提醒</p>
+                      <div class="ring-center">
+                        <p class="ring-clock" data-demo-clock>15:00</p>
+                        <p class="ring-date" data-demo-ring-date>8月27日 星期四</p>
+                        <span class="ring-rule" aria-hidden="true"></span>
+                        <h3 class="ring-title" data-i18n="placeTitle">取快递</h3>
+                      </div>
+                      <div class="ring-actions">
+                        <span class="ring-btn ring-snooze" data-i18n="demoSnooze">延后 10 分钟</span>
+                        <span class="ring-btn ring-confirm" data-i18n="demoConfirm">确认</span>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+                </div>
+              </aside>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="page-mod" id="features">
+        <div class="page-mod-frame">
+          <div class="page-mod-inner page-mod-flow">
+            <ol class="flow">
+              <li>
+                <span class="flow-index">01</span>
+                <h3 data-i18n="flow1t">说话</h3>
+                <p data-i18n="flow1d">按住说话，或进入免提通话。一句指令，或多轮确认，都可以用语音完成。</p>
+              </li>
+              <li>
+                <span class="flow-index">02</span>
+                <h3 data-i18n="flow2t">理解意图</h3>
+                <p data-i18n="flow2d">识别意图后执行相应操作：新建、查询、修改、删除日程，以及设置地点提醒。</p>
+              </li>
+              <li>
+                <span class="flow-index">03</span>
+                <h3 data-i18n="flow3t">写入并同步</h3>
+                <p data-i18n="flow3d">安排写入云端后，同步到本机。日历即时更新，无需手动刷新。</p>
+              </li>
+              <li>
+                <span class="flow-index">04</span>
+                <h3 data-i18n="flow4t">按时、按地提醒</h3>
+                <p data-i18n="flow4d">到点会响铃；到达指定地点时，也会提醒。</p>
+              </li>
+            </ol>
+            <div class="section-head">
+              <p class="eyebrow" data-i18n="featEyebrow">核心能力</p>
+              <h2 data-i18n="featTitle">用语音安排日程，不必填写表单。</h2>
+            </div>
+            <div class="feature-grid">
+              <article class="feature">
+                <h3 data-i18n="f1t">用语音管理日程</h3>
+                <p data-i18n="f1d">新建、查询、修改、删除日程，都可以用语音完成，不必在表单和日历之间来回切换。</p>
+              </article>
+              <article class="feature">
+                <h3 data-i18n="f3t">时间与地点</h3>
+                <p data-i18n="f3d">支持到点闹钟，以及到达指定地点时的提醒。取快递、开会、路过某地，都可以设为提醒。</p>
+              </article>
+              <article class="feature">
+                <h3 data-i18n="f4t">云端写入，本地可见</h3>
+                <p data-i18n="f4d">安排先保存在云端，再同步到本机。离线仍可查看日历，联网后自动同步。</p>
+              </article>
+              <article class="feature">
+                <h3 data-i18n="f6t">你的日程只属于你</h3>
+                <p data-i18n="f6d">每个账号的日程相互隔离。语音功能需登录后使用。</p>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page-mod" id="product">
+        <div class="page-mod-frame">
+          <div class="page-mod-inner page-mod-product">
+            <div class="product-copy">
+              <div class="product-intro">
+                <p class="eyebrow" data-i18n="prodEyebrow">产品形态</p>
+                <h2 data-i18n="prodTitle">主界面是日历，语音入口在底部。</h2>
+                <p data-i18n="prodLead">
+                  主界面为月历与当日议程。底部语音栏左侧为免提通话，右侧为按住说话。免提通话进行中，按住说话会暂时停用，避免同时占用麦克风。
+                </p>
+              </div>
+              <ul class="check-list">
+                <li data-i18n="p1">月历圆点标出有安排的日子</li>
+                <li data-i18n="p2">时间日程与地点提醒分开展示</li>
+                <li data-i18n="p3">系统闹钟、后台定位，以及麦克风权限说明</li>
+              </ul>
+            </div>
+            <div class="open-block" id="open">
+              <div class="open-copy">
+                <p class="eyebrow" data-i18n="openEyebrow">开源</p>
+                <h2 data-i18n="openTitle">代码开源，可自行部署。</h2>
+                <p data-i18n="openLead">
+                  客户端是 Expo 与 React Native，服务端是 FastAPI 与 PostgreSQL。语音使用通义实时模型，地点检索可接腾讯地图。可用 Docker Compose 启动数据库与 API。在 Android 上安装后即可使用语音功能。
+                </p>
+                <div class="hero-cta">
+                  <a class="btn btn-solid btn-lg" href="https://github.com/1024XEngineer/timeflow" data-i18n="openCta"
+                    >打开仓库</a
+                  >
+                  <a
+                    class="btn btn-ghost btn-lg"
+                    href="https://github.com/1024XEngineer/timeflow/blob/main/README.md"
+                    data-i18n="openGuide"
+                    >阅读上手说明</a
+                  >
+                </div>
+              </div>
+              <ul class="stack">
+                <li>
+                  <span data-i18n="stClient">客户端</span>
+                  <strong>Expo · React Native · TypeScript · SQLite</strong>
+                </li>
+                <li>
+                  <span data-i18n="stServer">服务端</span>
+                  <strong>Python 3.11 · FastAPI · PostgreSQL 16</strong>
+                </li>
+                <li>
+                  <span data-i18n="stVoice">语音与地点</span>
+                  <strong data-i18n="stVoiceVal">通义实时语音 · 腾讯地图检索</strong>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page-mod about" id="about">
+        <div class="page-mod-frame">
+          <div class="page-mod-inner page-mod-about">
+            <div class="section-head">
+              <p class="eyebrow" data-i18n="aboutEyebrow">关于 TimeFlow</p>
+              <img
+                class="about-mark"
+                src="./mark.jpg"
+                width="640"
+                height="585"
+                alt="TimeFlow 标志：时钟与小鸟"
+              />
+              <h2 data-i18n="aboutTitle">一只提醒你守时的小鸟。</h2>
+              <p class="about-lead" data-i18n="aboutLead">
+                品牌由三个符号组成：时钟代表时间，小鸟代表陪伴与提醒，流线代表时间的流动。
+              </p>
+            </div>
+            <ul class="about-symbols">
+              <li>
+                <span class="about-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="22" height="22">
+                    <circle cx="12" cy="12" r="8.2" fill="none" stroke="currentColor" stroke-width="1.7" />
+                    <path d="M12 7.2v5.1l3.2 1.9" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.7" />
+                  </svg>
+                </span>
+                <h3 data-i18n="aboutClockT">时钟</h3>
+                <p data-i18n="aboutClockD">代表时间</p>
+              </li>
+              <li>
+                <span class="about-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="22" height="22">
+                    <path
+                      d="M4.8 14.2c2.4-1.2 4.2-3.8 4.6-6.6 2.6.2 4.8 1.6 6.2 3.8 1.8-.2 3.5.4 4.6 1.6-1.8 1.8-4.4 2.6-7 2.2-1.4 2.2-3.8 3.6-6.4 3.8-.2-1.6.2-3.2.8-4.8Z"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-linejoin="round"
+                      stroke-width="1.7"
+                    />
+                    <circle cx="8.4" cy="9.2" r="0.9" fill="currentColor" />
+                  </svg>
+                </span>
+                <h3 data-i18n="aboutBirdT">小鸟</h3>
+                <p data-i18n="aboutBirdD">代表陪伴与提醒</p>
+              </li>
+              <li>
+                <span class="about-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="22" height="22">
+                    <path
+                      d="M3.5 14.5c3.2-4.8 5.8-4.8 8.5 0s5.3 4.8 8.5 0"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-width="1.7"
+                    />
+                  </svg>
+                </span>
+                <h3 data-i18n="aboutFlowT">流线</h3>
+                <p data-i18n="aboutFlowD">代表时间在流动</p>
+              </li>
+            </ul>
+            <div class="about-story">
+              <div class="about-copy">
+                <p data-i18n="aboutStory1">
+                  日程一多，真正耗神的往往不是不知道做什么，而是忙碌中仍要记住何时出发。
+                </p>
+                <p data-i18n="aboutStory2">
+                  对 TimeFlow 说出安排，即可写入日程并设置提醒。你可以继续当前工作，不必反复查看时间。
+                </p>
+                <p data-i18n="aboutStory3">
+                  时间临近时会按时提醒。若设置了地点提醒，到达公司或学校时，也会提示下一项安排。
+                </p>
+                <p class="about-close" data-i18n="aboutClose">小鸟不是装饰，而是提醒：到点出现，把你带回安排。</p>
+              </div>
+              <aside class="quote-card">
+                <p class="quote" data-i18n="aboutQuote">「明天下午三点有项目会议，提前十分钟提醒我。」</p>
+                <p class="quote-reply" data-i18n="aboutQuoteReply">距离项目会议还有十分钟。</p>
+                <p class="quote-meta" data-i18n="aboutQuoteMeta">到点提醒；若设置了地点，到达时也会提示。</p>
+              </aside>
+            </div>
+            <footer class="footer">
+              <a class="wordmark" href="#top" aria-label="TimeFlow 首页">
+                <span class="wordmark-time">Time</span><span class="wordmark-flow">flow</span>
+              </a>
+              <p data-i18n="footerTag">言出成约，时至如约。</p>
+              <p class="footer-links">
+                <a href="https://github.com/1024XEngineer/timeflow">GitHub</a>
+                <a href="https://github.com/1024XEngineer/timeflow/issues">Issues</a>
+                <a
+                  href="https://github.com/1024XEngineer/timeflow/releases"
+                  data-i18n="navTry"
+                  >下载</a
+                >
+              </p>
+            </footer>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+    <noscript>
+      <style>
+        .reveal {
+          opacity: 1;
+          transform: none;
+        }
+      </style>
+    </noscript>
+    <script src="./script.js"></script>
+  </body>
+</html>
