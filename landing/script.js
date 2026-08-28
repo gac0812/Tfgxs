@@ -116,7 +116,7 @@ const copy = {
     stVoice: "语音与地点",
     stVoiceVal: "通义实时语音 · 腾讯地图检索",
     footerTag: "言出成约，时至如约。",
-    preview: "在线预览",
+    preview: "下载",
     toast: "已记下：明天下午 3:00 取快递",
     weekdays: ["一", "二", "三", "四", "五", "六", "日"],
     eventsToday: [
@@ -256,7 +256,7 @@ const copy = {
     stVoice: "Voice and places",
     stVoiceVal: "Tongyi realtime speech · Tencent Maps search",
     footerTag: "Say it, and it is scheduled. When the time comes, it keeps the promise.",
-    preview: "Live preview",
+    preview: "Download",
     toast: "Noted: tomorrow 3:00 p.m. pick up the package",
     weekdays: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     eventsToday: [
